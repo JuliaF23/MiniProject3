@@ -1,27 +1,39 @@
 import random
 
-# Waord list
+# Word list
 word_list = ["apple", "banana", "cherry", "orange", "grapes", "lemon", "brazil", "strawberry", "watermelon", "keyboard", 
              "elephant", "monkey", "library", "vampire", "mystery", "umbrella", "backpack", "dolphin", "robot", "journey"]
 
-# Load score from file
-def load_score(filename="score.txt"):
+# Load all scores from file as a dictionary
+def load_scores(filename="score.txt"):
+    scores = {}
     try:
         with open(filename, "r") as file:
-            return int(file.read())
+            for line in file:
+                name, score = line.strip().split(":")
+                scores[name.strip()] = int(score.strip())
     except FileNotFoundError:
-        return 
+        pass
+    return scores
 
-# Save score to file
-def save_score(score, filename="score.txt"):
+# Save all scores to file
+def save_scores(scores, filename="score.txt"):
     with open(filename, "w") as file:
-        file.write(str(score))
+        for name, score in scores.items():
+            file.write(f"{name}: {score}\n")
 
-# Choose a random word
+# Show full score table
+def show_scoreboard(scores):
+    print("\nScoreboard:")
+    for name, score in sorted(scores.items(), key=lambda x: x[1], reverse=True):
+        print(f"{name}: {score}")
+    print()
+
+# Choose random word
 def choose_word(words):
     return random.choice(words)
 
-# Show current word state
+# Show word with underscores and guessed letters
 def display_current_state(word, guessed_letters):
     return " ".join([letter if letter in guessed_letters else "_" for letter in word])
 
@@ -29,11 +41,11 @@ def display_current_state(word, guessed_letters):
 def display_guessed_letters(guessed_letters):
     return ", ".join(guessed_letters)
 
-# Check if player won
+# Check for win
 def has_won(word, guessed_letters):
     return all(letter in guessed_letters for letter in word)
 
-# Main game function
+# Main game logic
 def play_hangman(word):
     guessed_letters = []
     tries_left = 6
@@ -42,7 +54,7 @@ def play_hangman(word):
     print("You have", tries_left, "tries. Good luck!\n")
 
     while tries_left > 0:
-        print()  # Add blank line
+        print()
         print("Word:", display_current_state(word, guessed_letters))
         print("Guessed letters:", display_guessed_letters(guessed_letters))
         print("Tries left:", tries_left)
@@ -67,12 +79,12 @@ def play_hangman(word):
 
         if has_won(word, guessed_letters):
             print("\nCongratulations! You won! The word was:", word)
-            return True  # Victory
+            return True
 
     print("\nGame over! You lost. The word was:", word)
-    return False  # Defeat
+    return False
 
-# Ask if the player wants to play again
+# Ask if player wants to play again
 def play_again():
     while True:
         answer = input("\nDo you want to play again? (yes/no): ").lower()
@@ -85,10 +97,19 @@ def play_again():
 
 # Main program
 def main():
-    available_words = word_list.copy()
-    score = load_score()
+    scores = load_scores()
+    
+    # Ask for player's name
+    player = input("Enter your name: ").strip()
+    if player == "":
+        player = "Player"
 
-    print("Current score:", score)
+    player_score = scores.get(player, 0)
+    print(f"\nWelcome, {player}! Your current score is: {player_score}")
+
+    show_scoreboard(scores)
+
+    available_words = word_list.copy()
 
     while available_words:
         word = choose_word(available_words)
@@ -97,17 +118,19 @@ def main():
         won = play_hangman(word)
 
         if won:
-            score += 1
-            print("Your score is now:", score)
-            save_score(score)
+            scores[player] = scores.get(player, 0) + 1
+            print("Your score is now:", scores[player])
+            save_scores(scores)
 
         if not available_words:
-            print("\nNo more new words left. Final score:", score)
+            print("\nNo more new words left.")
             break
 
         if not play_again():
-            print("\nThanks for playing! Your final score is:", score)
             break
+
+    print("\nThanks for playing! Final score:", scores[player])
+    show_scoreboard(scores)
 
 # Run the game
 main()
