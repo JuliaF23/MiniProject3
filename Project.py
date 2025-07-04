@@ -25,7 +25,7 @@ def play_hangman():
     guessed_letters = []
     tries_left = 6
 
-    print("Welcome to Hangman!\n")
+    print("\nWelcome to Hangman!\n")
 
     while tries_left > 0:
         # Display current word state and guesses
@@ -57,11 +57,29 @@ def play_hangman():
         # Check for win
         if has_won(word, guessed_letters):
             print("\nCongratulations! You won! The word was:", word)
-            break
+            return  # End current game
 
     # If out of tries, player loses
-    if tries_left == 0:
-        print("\nGame over! You lost. The word was:", word)
+    print("\nGame over! You lost. The word was:", word)
 
-# Start the game
-play_hangman()
+# Function to ask if the player wants to play again
+def play_again():
+    while True:
+        answer = input("\nDo you want to play again? (yes/no): ").lower()
+        if answer in ["yes", "y"]:
+            return True
+        elif answer in ["no", "n"]:
+            return False
+        else:
+            print("Please answer 'yes' or 'no'.")
+
+# Main program loop
+def main():
+    while True:
+        play_hangman()
+        if not play_again():
+            print("\nThanks for playing Hangman! Goodbye!")
+            break
+
+# Start the program
+main()
